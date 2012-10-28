@@ -1,0 +1,53 @@
+Dumitrescu Evelina
+Tema 3 PC
+
+Implementare
+  Am definit in helpers.h o structura client care retine
+    - IP-ul unui client
+    - un port pt conexiunea cu serverul
+    - un port de listening pt conexiuni noi
+    - un port pt conexiunea cu alti clienti (lis port)
+    - timpul de conectare 
+    - lista de fisiere partajate
+
+CLIENT
+	* isi creaza cei doi socketi, unul pe care asculta + legatura cu serverul
+	 * se conecteaza la server, care este legat la setul de read,
+	* in setul de read_fds este adaugat si stdin, pentru comenzi de la tastatura.
+	* la un client apare conexiunea noua doar daca primeste mesaj - pe care il afiseaza direct, sau daca primeste fisier. 
+	* initial, el va primi doar numele fisierului care  se transmite. Deschide fisierul in care va scrie, si adauga un nou element cozii qmsg care contine fisierele in curs de primire);
+	* noul socket este adaugat la setul de citire.
+	* orice comanda de la tastatura (cu exceptia message si getfile) este trimisa direct serverului si se asteapta raspuns, care este afisat.
+  * pentru a trimite un mesaj:
+     - se transmite comanda de message serverului
+     - acesta raspunde cu adresa si portul pe care asculta clientul destinatar
+     - clientul curent realizeaza o conexiune cu destinatarul, trimite mesajul si o inchide. 
+	* pentru a trimite un fisier:
+	    - este interogat mai intai serverului pentru afla adresa si portul
+	    - clientul curent se conecteaza la destinatar.  
+	    - se trimite initial un mesaj BEGIN, iar apoi chunkuride maxim 1024B
+	    - cand terminam de trimis fisierul, se transmite un mesaj END
+
+SERVER
+  * creeaza socketul, il leaga la adresa si apoi asteapta conexiuni. 
+	* in setul de read_fds este adaugat si stdin, pentru comenzi de la tastatura.
+	* pastreaza un vector de clienti care contine 
+	    numele
+	    portul pe care asculta
+	    adresa
+	    timpul de conectare
+	    fisierle partajate de la feicare client
+	    socketul, pentru a stii la un anumit socket, despre ce client este vorba.
+	* daca primeste o conexiune noua, preia numele si portul clientului 
+	    =>daca acesta e deja in vectorul de clienti, nu il adauga si inchide conexiunea respectiva; trimite REJECT 
+	    =>daca este un client nou, trimite ACCEPT
+	* daca primeste comanda de la stdin(status sau quit). 
+	        status=>afiseaza lista de clienti
+	        quit=>inchide toti socketii deschisi si iese.
+	* comenzi de la client:
+		- listclients -> trimite inapoi un sir ce contine numele clientilor
+		- infoclient -> trimite inapoi un sir ce contine informatii despre clientul cautat. Daca nu exista un client cu numele respectiv, trimite "No such client".
+		- message, getfile -> trimite un sir cu adresa si portul la care un client trebuie sa se conecteze pt a trimite mesajul.
+		- sharefile, unsharefile -> modifica in mod corespunzator campul corespunzator listei cerute pt clientul respectiv
+		- quit -> sterge clientul din vector si inchide socketul respectiv;il scoate din setul de read.
+
