@@ -1,4 +1,5 @@
 ClientServer
 ============
 
-Automatic detection and correction of misspelled words by using a dictionary of word frequencies Concepts used: dynamic programming and Levenstein distance
+Client server application with TCP sockets for exchanging messages and files.
+The system consists in multiple clients and a central system that allows client discovery.
